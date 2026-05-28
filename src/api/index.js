@@ -114,9 +114,10 @@ export async function updateProfile(profileData) {
       body: JSON.stringify(profileData)
     })
     const result = await res.json()
-    // 更新缓存
-    setCache('profile', { ...getFromCache('profile'), ...profileData })
-    return result
+    // 使用后端返回的完整数据更新缓存
+    const updatedProfile = result.data || result
+    setCache('profile', updatedProfile)
+    return updatedProfile
   } catch (error) {
     console.error('更新个人信息失败:', error)
     throw error

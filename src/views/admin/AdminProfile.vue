@@ -156,9 +156,8 @@ const removeCertification = (index) => {
 const saveProfile = async () => {
   saving.value = true
   try {
-    await updateProfile(formData.value)
-    // 保存后重新获取最新数据
-    const data = await getProfile()
+    // 直接使用 updateProfile 返回的更新后数据
+    const data = await updateProfile(formData.value)
     formData.value = {
       name: data.name || '',
       education: data.education || '',
