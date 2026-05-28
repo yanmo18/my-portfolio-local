@@ -166,14 +166,27 @@ const handleLogin = async () => {
 
   loading.value = true
 
-  // 模拟登录请求
-  await new Promise(resolve => setTimeout(resolve, 800))
-
-  if (form.username === ADMIN_CREDENTIALS.username && form.password === ADMIN_CREDENTIALS.password) {
-    localStorage.setItem('admin_token', 'authenticated')
-    router.push('/admin')
-  } else {
-    error.value = '用户名或密码错误'
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: form.username,
+        password: form.password
+      })
+    })
+    
+    const result = await res.json()
+    
+    if (res.ok && result.data?.token) {
+      localStorage.setItem('token', result.data.token)
+      router.push('/admin')
+    } else {
+      error.value = result.message || '用户名或密码错误'
+    }
+  } catch (err) {
+    error.value = '登录失败，请检查后端服务'
+    console.error('Login error:', err)
   }
 
   loading.value = false
