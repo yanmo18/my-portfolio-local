@@ -108,9 +108,15 @@ export async function updateProfile(profileData) {
   }
   
   try {
+    const token = localStorage.getItem('token')
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
     const res = await fetch(`${API_BASE}/api/profile`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(profileData)
     })
     const result = await res.json()
