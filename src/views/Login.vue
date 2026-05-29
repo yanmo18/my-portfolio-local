@@ -182,7 +182,7 @@ const handleLogin = async () => {
       localStorage.setItem('token', result.data.token)
       router.push('/admin')
     } else {
-      error.value = result.message || '用户名或密码错误'
+      error.value = result.error || result.message || '用户名或密码错误'
     }
   } catch (err) {
     error.value = '登录失败，请检查后端服务'

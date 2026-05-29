@@ -119,6 +119,16 @@ export async function updateProfile(profileData) {
       headers: headers,
       body: JSON.stringify(profileData)
     })
+    
+    // 检查响应状态码
+    if (!res.ok) {
+      const errorData = await res.json()
+      if (res.status === 401) {
+        throw new Error(errorData.error || '登录已过期，请重新登录')
+      }
+      throw new Error(errorData.error || '更新失败')
+    }
+    
     const result = await res.json()
     // 使用后端返回的完整数据更新缓存
     const updatedProfile = result.data || result

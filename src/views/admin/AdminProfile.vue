@@ -111,6 +111,11 @@
     <div v-if="showSuccess" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
       保存成功！
     </div>
+    
+    <!-- 错误提示 -->
+    <div v-if="errorMessage" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>
 
@@ -136,6 +141,7 @@ const formData = ref({
 
 const saving = ref(false)
 const showSuccess = ref(false)
+const errorMessage = ref('')
 
 const addSkill = () => {
   formData.value.skills.push({ name: '' })
@@ -155,6 +161,7 @@ const removeCertification = (index) => {
 
 const saveProfile = async () => {
   saving.value = true
+  errorMessage.value = ''
   try {
     // 直接使用 updateProfile 返回的更新后数据
     const data = await updateProfile(formData.value)
@@ -177,6 +184,13 @@ const saveProfile = async () => {
     setTimeout(() => { showSuccess.value = false }, 3000)
   } catch (error) {
     console.error('保存失败:', error)
+    errorMessage.value = error.message || '保存失败，请稍后重试'
+    // 如果是登录过期，跳转到登录页
+    if (error.message.includes('登录')) {
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
+    }
   } finally {
     saving.value = false
   }
