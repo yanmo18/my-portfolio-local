@@ -68,7 +68,7 @@ const menuItems = [
 ]
 
 const handleLogout = () => {
-  localStorage.removeItem('admin_token')
+  localStorage.removeItem('token')
   router.push('/login')
 }
 </script>

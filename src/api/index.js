@@ -3,9 +3,9 @@
  * 优先使用后端 API，后端不可用时：
  *   1. 优先读取 localStorage 缓存（用户之前添加的数据）
  *   2. 没有缓存则使用默认 Mock 数据
- * 
+ *
  * 成功获取后端数据时会自动更新 localStorage 缓存
- * 
+ *
  * 切换后端：改 API_BASE 地址即可
  */
 import { getData, saveData, generateId } from './mockData'
@@ -46,8 +46,8 @@ function getFromCache(key) {
 // 初始化：尝试连接后端，如果失败则加载缓存
 export async function initAPI() {
   try {
-    const response = await fetch(`${API_BASE}/get-profile`, { 
-      timeout: 5000 
+    const response = await fetch(`${API_BASE}/api/profile`, {
+      timeout: 5000
     })
     if (response.ok) {
       useMock = false
@@ -57,7 +57,7 @@ export async function initAPI() {
   } catch (e) {
     console.log('后端不可用，尝试使用缓存数据')
   }
-  
+
   // 后端不可用，检查是否有缓存
   const cache = getCache()
   if (cache && (cache.projects || cache.awards || cache.experience)) {
@@ -65,7 +65,7 @@ export async function initAPI() {
     useMock = 'cache' // 使用缓存模式
     return 'cache'
   }
-  
+
   useMock = true
   console.log('无缓存，使用默认 Mock 数据')
   return 'mock'
@@ -77,9 +77,9 @@ export async function getProfile() {
   if (useMock === true) {
     return getData().profile
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/get-profile`)
+    const res = await fetch(`${API_BASE}/api/profile`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const profile = data.data || data
@@ -106,20 +106,20 @@ export async function updateProfile(profileData) {
     saveData(allData)
     return { success: true }
   }
-  
+
   try {
     const token = localStorage.getItem('token')
     const headers = { 'Content-Type': 'application/json' }
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
-    
+
     const res = await fetch(`${API_BASE}/api/profile`, {
       method: 'PUT',
       headers: headers,
       body: JSON.stringify(profileData)
     })
-    
+
     // 检查响应状态码
     if (!res.ok) {
       const errorData = await res.json()
@@ -128,7 +128,7 @@ export async function updateProfile(profileData) {
       }
       throw new Error(errorData.error || '更新失败')
     }
-    
+
     const result = await res.json()
     // 使用后端返回的完整数据更新缓存
     const updatedProfile = result.data || result
@@ -146,9 +146,9 @@ export async function getProjects() {
   if (useMock === true) {
     return getData().projects
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/get-projects`)
+    const res = await fetch(`${API_BASE}/api/project`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const projects = data.data || data || []
@@ -176,9 +176,9 @@ export async function addProject(projectData) {
     saveData(allData)
     return { success: true, data: newProject }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/add-project`, {
+    const res = await fetch(`${API_BASE}/api/project`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(projectData)
@@ -204,9 +204,9 @@ export async function updateProject(projectData) {
     }
     return { success: true }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/update-project`, {
+    const res = await fetch(`${API_BASE}/api/project`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(projectData)
@@ -229,7 +229,7 @@ export async function deleteProject(id) {
     saveData(allData)
     return { success: true }
   }
-  
+
   try {
     const res = await fetch(`${API_BASE}/api/project`, {
       method: 'DELETE',
@@ -253,9 +253,9 @@ export async function getAwards() {
   if (useMock === true) {
     return getData().awards
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/get-awards`)
+    const res = await fetch(`${API_BASE}/api/award`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const awards = data.data || data || []
@@ -283,9 +283,9 @@ export async function addAward(awardData) {
     saveData(allData)
     return { success: true, data: newAward }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/add-award`, {
+    const res = await fetch(`${API_BASE}/api/award`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(awardData)
@@ -311,7 +311,7 @@ export async function updateAward(awardData) {
     }
     return { success: true }
   }
-  
+
   try {
     const res = await fetch(`${API_BASE}/api/award`, {
       method: 'PUT',
@@ -336,9 +336,9 @@ export async function deleteAward(id) {
     saveData(allData)
     return { success: true }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/delete-award`, {
+    const res = await fetch(`${API_BASE}/api/award`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ _id: id })
@@ -360,9 +360,9 @@ export async function getExperience() {
   if (useMock === true) {
     return getData().experience
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/get-experience`)
+    const res = await fetch(`${API_BASE}/api/experience`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const experience = data.data || data || []
@@ -390,9 +390,9 @@ export async function addExperience(experienceData) {
     saveData(allData)
     return { success: true, data: newExperience }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/add-experience`, {
+    const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(experienceData)
@@ -418,9 +418,9 @@ export async function updateExperience(experienceData) {
     }
     return { success: true }
   }
-  
+
   try {
-    const res = await fetch(`${API_BASE}/update-experience`, {
+    const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(experienceData)
@@ -443,7 +443,7 @@ export async function deleteExperience(id) {
     saveData(allData)
     return { success: true }
   }
-  
+
   try {
     const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'DELETE',
@@ -471,11 +471,11 @@ export async function uploadResume(file) {
   if (useMock === true) {
     return { success: true, message: 'Mock 模式：简历上传已模拟' }
   }
-  
+
   try {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     const res = await fetch(`${API_BASE}/upload-resume`, {
       method: 'POST',
       body: formData
