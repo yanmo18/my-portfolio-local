@@ -13,7 +13,7 @@
     <!-- 项目列表 -->
     <div class="grid grid-cols-2 gap-6">
       <div 
-        v-for="project in projects" :key="project._id"
+        v-for="project in projects" :key="project.id"
         class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
       >
         <div class="h-40 bg-gray-100 overflow-hidden">
@@ -218,7 +218,7 @@ const openAddModal = () => {
 
 const openEditModal = (project) => {
   isEditing.value = true
-  editingId.value = project._id
+  editingId.value = project.id
   formData.value = { ...project }
   techStackInput.value = project.techStack?.join(', ') || ''
   featuresInput.value = project.features?.map((f, i) => `${i + 1}. ${f}`).join('\n') || ''
@@ -310,7 +310,7 @@ const saveProject = async () => {
   
   try {
     if (isEditing.value) {
-      await updateProject({ _id: editingId.value, ...data })
+      await updateProject({ id: editingId.value, ...data })
     } else {
       await addProject(data)
     }
@@ -332,7 +332,7 @@ const confirmDelete = (project) => {
 
 const doDelete = async () => {
   try {
-    await deleteProject(deleteTarget.value._id)
+    await deleteProject(deleteTarget.value.id)
     showDeleteConfirm.value = false
     loadProjects()
     showSuccess.value = true

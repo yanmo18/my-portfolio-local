@@ -14,7 +14,7 @@
     <div class="relative pl-8">
       <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-[#e63946]"></div>
       <div class="space-y-8">
-        <div v-for="(exp, index) in experience" :key="exp._id" class="relative">
+        <div v-for="(exp, index) in experience" :key="exp.id" class="relative">
           <div class="absolute -left-8 top-1 w-4 h-4 rounded-full bg-[#e63946] border-4 border-[#FAF8F5] -translate-x-[5px]"></div>
           <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow ml-4">
             <div class="flex justify-between items-start">
@@ -133,7 +133,7 @@ const openAddModal = () => {
 
 const openEditModal = (exp) => {
   isEditing.value = true
-  editingId.value = exp._id
+  editingId.value = exp.id
   formData.value = { ...exp }
   showModal.value = true
 }
@@ -145,7 +145,7 @@ const closeModal = () => {
 const saveExperience = async () => {
   try {
     if (isEditing.value) {
-      await updateExperience({ _id: editingId.value, ...formData.value })
+      await updateExperience({ id: editingId.value, ...formData.value })
     } else {
       await addExperience(formData.value)
     }
@@ -167,7 +167,7 @@ const confirmDelete = (exp) => {
 
 const doDelete = async () => {
   try {
-    await deleteExperience(deleteTarget.value._id)
+    await deleteExperience(deleteTarget.value.id)
     showDeleteConfirm.value = false
     deleteTarget.value = null
     loadExperience()

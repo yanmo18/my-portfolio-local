@@ -43,6 +43,11 @@ function getFromCache(key) {
   return cache ? cache[key] : null
 }
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('token')
+  return token ? { 'Authorization': `Bearer ${token}` } : {}
+}
+
 // 初始化：尝试连接后端，如果失败则加载缓存
 export async function initAPI() {
   try {
@@ -180,7 +185,7 @@ export async function addProject(projectData) {
   try {
     const res = await fetch(`${API_BASE}/api/project`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(projectData)
     })
     const result = await res.json()
@@ -208,7 +213,7 @@ export async function updateProject(projectData) {
   try {
     const res = await fetch(`${API_BASE}/api/project`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(projectData)
     })
     const result = await res.json()
@@ -233,8 +238,8 @@ export async function deleteProject(id) {
   try {
     const res = await fetch(`${API_BASE}/api/project`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _id: id })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ id: id })
     })
     const result = await res.json()
     // 更新缓存
@@ -287,7 +292,7 @@ export async function addAward(awardData) {
   try {
     const res = await fetch(`${API_BASE}/api/award`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(awardData)
     })
     const result = await res.json()
@@ -315,7 +320,7 @@ export async function updateAward(awardData) {
   try {
     const res = await fetch(`${API_BASE}/api/award`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(awardData)
     })
     const result = await res.json()
@@ -340,8 +345,8 @@ export async function deleteAward(id) {
   try {
     const res = await fetch(`${API_BASE}/api/award`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _id: id })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ id: id })
     })
     const result = await res.json()
     // 更新缓存
@@ -394,7 +399,7 @@ export async function addExperience(experienceData) {
   try {
     const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(experienceData)
     })
     const result = await res.json()
@@ -422,7 +427,7 @@ export async function updateExperience(experienceData) {
   try {
     const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(experienceData)
     })
     const result = await res.json()
@@ -447,8 +452,8 @@ export async function deleteExperience(id) {
   try {
     const res = await fetch(`${API_BASE}/api/experience`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _id: id })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ id: id })
     })
     const result = await res.json()
     // 更新缓存
@@ -478,6 +483,7 @@ export async function uploadResume(file) {
 
     const res = await fetch(`${API_BASE}/upload-resume`, {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
     return await res.json()

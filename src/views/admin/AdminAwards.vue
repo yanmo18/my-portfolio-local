@@ -21,7 +21,7 @@
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr v-for="award in awards" :key="award._id" class="hover:bg-gray-50 transition-colors">
+          <tr v-for="award in awards" :key="award.id" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 <span class="w-2 h-2 rounded-full bg-[#e63946]"></span>
@@ -127,7 +127,7 @@ const openAddModal = () => {
 
 const openEditModal = (award) => {
   isEditing.value = true
-  editingId.value = award._id
+  editingId.value = award.id
   formData.value = { ...award }
   showModal.value = true
 }
@@ -161,7 +161,7 @@ const confirmDelete = (award) => {
 
 const doDelete = async () => {
   try {
-    await deleteAward(deleteTarget.value._id)
+    await deleteAward(deleteTarget.value.id)
     showDeleteConfirm.value = false
     deleteTarget.value = null
     loadAwards()
