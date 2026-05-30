@@ -260,7 +260,7 @@ export async function getAwards() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/award`)
+    const res = await fetch(`${API_BASE}/api/awards`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const awards = data.data || data || []
@@ -290,7 +290,7 @@ export async function addAward(awardData) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/award`, {
+    const res = await fetch(`${API_BASE}/api/awards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(awardData)
@@ -318,7 +318,7 @@ export async function updateAward(awardData) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/award`, {
+    const res = await fetch(`${API_BASE}/api/awards`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(awardData)
@@ -343,7 +343,7 @@ export async function deleteAward(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/award`, {
+    const res = await fetch(`${API_BASE}/api/awards`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ id: id })
@@ -367,7 +367,7 @@ export async function getExperience() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/experience`)
+    const res = await fetch(`${API_BASE}/api/experiences`)
     if (!res.ok) throw new Error('API error')
     const data = await res.json()
     const experience = data.data || data || []
@@ -397,7 +397,7 @@ export async function addExperience(experienceData) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/experience`, {
+    const res = await fetch(`${API_BASE}/api/experiences`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(experienceData)
@@ -425,7 +425,7 @@ export async function updateExperience(experienceData) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/experience`, {
+    const res = await fetch(`${API_BASE}/api/experiences`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(experienceData)
@@ -450,7 +450,7 @@ export async function deleteExperience(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/experience`, {
+    const res = await fetch(`${API_BASE}/api/experiences`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ id: id })

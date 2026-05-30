@@ -139,7 +139,7 @@ const closeModal = () => {
 const saveAward = async () => {
   try {
     if (isEditing.value) {
-      await updateAward(editingId.value, formData.value)
+      await updateAward(formData.value)
     } else {
       await addAward(formData.value)
     }
@@ -177,3 +177,15 @@ onMounted(async () => {
   loadAwards()
 })
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
