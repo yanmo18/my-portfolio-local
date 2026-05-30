@@ -292,22 +292,36 @@ pnpm preview
 - ✨ 新增 Express 后端服务（替换 Laf 云函数）
 - ✨ 集成 Prisma ORM + MySQL 数据库
 - ✨ 实现 JWT 认证机制
+- ✨ 新增环境变量配置（`.env.development` / `.env.production`）
 
 **Bug 修复：**
 - 🐛 修复登录无响应问题
   - 路由守卫 Token Key 不一致（`token` vs `admin_token`）
   - 数据库密码哈希与前端期望密码不匹配
+- 🐛 修复 token 认证逻辑缺陷
+  - 空字符串误判为已登录，改为 `!!localStorage.getItem('token')`
 - 🐛 修复 API 路径不匹配问题
   - 奖项接口：`/api/award` → `/api/awards`
   - 经历接口：`/api/experience` → `/api/experiences`
 - 🐛 修复奖项修改功能无法保存问题
   - `updateAward` 函数参数传递错误
 - 🐛 修复后端返回 HTML 而非 JSON 导致的解析错误
+- 🐛 修复中文乱码问题
+  - 数据库连接添加 `charset=utf8mb4`
+  - 字段类型改为 `TEXT` 支持中文
+- 🐛 修复字段名不匹配问题
+  - MongoDB 风格 `_id` → MySQL 风格 `id`
+- 🐛 修复图片上传失败
+  - 数据库字段 `cover` 从 `text` → `longtext`（支持 base64）
+  - Express 请求体限制 `100KB` → `10MB`
+- 🐛 修复 DELETE 请求格式错误
+  - 从 body 传递 id → 改为路径参数 `/api/{resource}/{id}`
 
 **功能增强：**
 - ✨ 完善前后端 API 接口文档
 - ✨ 增强错误处理和日志记录
 - ✨ 优化 API 适配层，支持智能降级
+- ✨ 支持大尺寸图片上传（base64 编码）
 
 ### v2.0.0 (2025.05)
 
