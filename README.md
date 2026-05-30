@@ -77,14 +77,14 @@
 
 ```
 lan-resume/
-├── my-portfolio-local/       # 前端项目
+├── my-portfolio-local/       # 前端项目 (Vue 3)
 │   ├── src/
 │   │   ├── api/              # API 接口层
 │   │   ├── router/           # 路由配置
 │   │   ├── views/            # 页面组件
 │   │   └── i18n/             # 国际化配置
 │   └── ...
-└── my-portfolio-backend/     # 后端项目
+└── my-portfolio-backend/     # 后端项目 (Express + Prisma)
     ├── src/
     │   ├── controllers/      # 业务控制器
     │   ├── routes/           # 路由定义
@@ -92,6 +92,9 @@ lan-resume/
     │   └── prisma/           # 数据库客户端
     └── ...
 ```
+
+📦 **后端仓库：** https://github.com/yanmo18/my-portfolio-backend
+📦 **前端仓库：** https://github.com/yanmo18/my-portfolio-local
 
 ## 📁 前端项目结构
 
@@ -151,19 +154,22 @@ VITE_DEBUG=false
 ### 安装依赖
 
 ```bash
-# 克隆项目
-git clone https://github.com/yanmo18/my-portfolio.git
+# 克隆前端项目
+git clone https://github.com/yanmo18/my-portfolio-local.git
 
 # 进入前端目录
-cd my-portfolio/my-portfolio-local
+cd my-portfolio-local
 
-# 安装依赖
+# 安装前端依赖
 pnpm install
+
+# 克隆后端项目
+git clone https://github.com/yanmo18/my-portfolio-backend.git
 
 # 进入后端目录
 cd ../my-portfolio-backend
 
-# 安装依赖
+# 安装后端依赖
 pnpm install
 ```
 
