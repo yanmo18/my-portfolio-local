@@ -5,6 +5,7 @@
 ![Vue](https://img.shields.io/badge/Vue-3.5-green)
 ![Vite](https://img.shields.io/badge/Vite-8.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC)
+![Express](https://img.shields.io/badge/Express-4.x-000000)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## 📝 项目简介
@@ -55,7 +56,7 @@
 - ⚡ **Vite 构建** - 极快的开发服务器和热更新
 - 🎭 **Tailwind CSS** - 原子化 CSS，快速样式开发
 - 🔄 **API 降级** - 后端不可用时自动使用本地 Mock 数据
-- 📊 **实时数据** - 连接 Laf 云函数，实时同步
+- 📊 **实时数据** - 支持连接 Express 后端，实时同步
 - 💾 **智能缓存** - localStorage 自动备份数据
 
 ## 🛠️ 技术栈
@@ -67,12 +68,35 @@
 | **Tailwind CSS** | 原子化 CSS 框架 |
 | **Vue Router** | Vue 官方路由管理器 |
 | **Vue I18n** | Vue 国际化插件 |
-| **Laf** | Serverless 云开发平台 + MongoDB |
+| **Express** | Node.js Web 框架（后端） |
+| **Prisma** | Node.js ORM（数据库） |
+| **MySQL** | 关系型数据库 |
+| **JWT** | 身份认证 |
 
-## 📁 项目结构
+## 🏗️ 项目架构
 
 ```
-my-portfolio/
+lan-resume/
+├── my-portfolio-local/       # 前端项目
+│   ├── src/
+│   │   ├── api/              # API 接口层
+│   │   ├── router/           # 路由配置
+│   │   ├── views/            # 页面组件
+│   │   └── i18n/             # 国际化配置
+│   └── ...
+└── my-portfolio-backend/     # 后端项目
+    ├── src/
+    │   ├── controllers/      # 业务控制器
+    │   ├── routes/           # 路由定义
+    │   ├── middleware/       # 中间件
+    │   └── prisma/           # 数据库客户端
+    └── ...
+```
+
+## 📁 前端项目结构
+
+```
+my-portfolio-local/
 ├── public/                    # 静态资源
 ├── assets/                    # Git 跟踪的展示图片
 ├── screenshots/               # 截图存放目录
@@ -104,6 +128,25 @@ my-portfolio/
 ### 环境要求
 - Node.js 18+
 - pnpm 10+
+- MySQL 8.0+（后端需要）
+
+### 环境变量配置
+
+项目使用 `.env.development` 和 `.env.production` 管理不同环境的配置。
+
+```bash
+# .env.development（开发环境）
+VITE_API_BASE=http://localhost:5000
+VITE_DEBUG=true
+
+# .env.production（生产环境）
+VITE_API_BASE=https://your-api-domain.com
+VITE_DEBUG=false
+```
+
+**部署时修改：**
+1. 修改 `.env.production` 中的 `VITE_API_BASE` 为实际的后端地址
+2. 执行 `pnpm build` 构建生产版本
 
 ### 安装依赖
 
@@ -111,26 +154,56 @@ my-portfolio/
 # 克隆项目
 git clone https://github.com/yanmo18/my-portfolio.git
 
-# 进入目录
-cd my-portfolio
+# 进入前端目录
+cd my-portfolio/my-portfolio-local
+
+# 安装依赖
+pnpm install
+
+# 进入后端目录
+cd ../my-portfolio-backend
 
 # 安装依赖
 pnpm install
 ```
 
+### 后端配置
+
+1. 在 `my-portfolio-backend` 目录下创建 `.env` 文件：
+```env
+DATABASE_URL="mysql://username:password@localhost:3306/portfolio_db"
+JWT_SECRET="your-secret-key"
+PORT=5000
+```
+
+2. 创建数据库并运行迁移：
+```bash
+# 创建数据库表
+npx prisma migrate deploy
+
+# 初始化数据（可选）
+npx prisma db seed
+```
+
 ### 开发预览
 
 ```bash
-# 启动开发服务器
+# 启动后端服务（终端1）
+cd my-portfolio-backend
 pnpm dev
 
-# 访问 http://localhost:5000
+# 启动前端服务（终端2）
+cd my-portfolio-local
+pnpm dev
+
+# 访问 http://localhost:5173
 ```
 
 ### 生产构建
 
 ```bash
-# 构建生产版本
+# 构建前端生产版本
+cd my-portfolio-local
 pnpm build
 
 # 预览构建结果
@@ -152,27 +225,32 @@ pnpm preview
 
 ## 🔌 后端 API
 
-项目使用 **Laf 云函数** 提供后端服务
-
 ### 接口列表
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/get-profile` | GET | 获取个人信息 |
-| `/update-profile` | PUT | 更新个人信息 |
-| `/get-projects` | GET | 获取项目列表 |
-| `/add-project` | POST | 添加项目 |
-| `/update-project` | PUT | 更新项目 |
-| `/delete-project` | DELETE | 删除项目 |
-| `/get-awards` | GET | 获取奖项列表 |
-| `/add-award` | POST | 添加奖项 |
-| `/update-award` | PUT | 更新奖项 |
-| `/delete-award` | DELETE | 删除奖项 |
-| `/get-experience` | GET | 获取经历列表 |
-| `/add-experience` | POST | 添加经历 |
-| `/update-experience` | PUT | 更新经历 |
-| `/delete-experience` | DELETE | 删除经历 |
-| `/upload-resume` | POST | 上传简历 |
+| 接口 | 方法 | 说明 | 认证 |
+|------|------|------|------|
+| `/api/auth/login` | POST | 用户登录 | 否 |
+| `/api/auth/register` | POST | 用户注册 | 否 |
+| `/api/profile` | GET | 获取个人信息 | 否 |
+| `/api/profile` | PUT | 更新个人信息 | 是 |
+| `/api/project` | GET | 获取项目列表 | 否 |
+| `/api/project` | POST | 添加项目 | 是 |
+| `/api/project` | PUT | 更新项目 | 是 |
+| `/api/project` | DELETE | 删除项目 | 是 |
+| `/api/awards` | GET | 获取奖项列表 | 否 |
+| `/api/awards` | POST | 添加奖项 | 是 |
+| `/api/awards` | PUT | 更新奖项 | 是 |
+| `/api/awards` | DELETE | 删除奖项 | 是 |
+| `/api/experiences` | GET | 获取经历列表 | 否 |
+| `/api/experiences` | POST | 添加经历 | 是 |
+| `/api/experiences` | PUT | 更新经历 | 是 |
+| `/api/experiences` | DELETE | 删除经历 | 是 |
+| `/upload-resume` | POST | 上传简历 | 是 |
+
+### 登录凭证
+
+- **用户名**: `admin`
+- **密码**: `Fernoa@2024`
 
 ## 🎨 配色方案
 
@@ -208,7 +286,31 @@ pnpm preview
 
 ## 📊 更新日志
 
+### v2.1.0 (2026.05) - 后端重构与 Bug 修复
+
+**架构升级：**
+- ✨ 新增 Express 后端服务（替换 Laf 云函数）
+- ✨ 集成 Prisma ORM + MySQL 数据库
+- ✨ 实现 JWT 认证机制
+
+**Bug 修复：**
+- 🐛 修复登录无响应问题
+  - 路由守卫 Token Key 不一致（`token` vs `admin_token`）
+  - 数据库密码哈希与前端期望密码不匹配
+- 🐛 修复 API 路径不匹配问题
+  - 奖项接口：`/api/award` → `/api/awards`
+  - 经历接口：`/api/experience` → `/api/experiences`
+- 🐛 修复奖项修改功能无法保存问题
+  - `updateAward` 函数参数传递错误
+- 🐛 修复后端返回 HTML 而非 JSON 导致的解析错误
+
+**功能增强：**
+- ✨ 完善前后端 API 接口文档
+- ✨ 增强错误处理和日志记录
+- ✨ 优化 API 适配层，支持智能降级
+
 ### v2.0.0 (2025.05)
+
 **新增功能：**
 - ✨ 管理后台登录验证系统
   - 双层镂空渐变边框旋转动画
@@ -244,6 +346,7 @@ pnpm preview
 - 💄 登录页动画效果迭代
 
 ### v1.0.0 (2025.04)
+
 **初始版本：**
 - 📦 基础项目架构搭建
 - 📦 首页展示模块
@@ -259,9 +362,10 @@ pnpm preview
 3. 在导航栏添加链接
 
 ### 添加新 API
-1. 在 Laf 后台创建云函数
-2. 在 `src/api/index.js` 中添加调用方法
-3. 自动降级逻辑已内置
+1. 在后端 `src/routes/` 创建路由文件
+2. 在 `src/controllers/` 创建控制器
+3. 在前端 `src/api/index.js` 中添加调用方法
+4. 自动降级逻辑已内置
 
 ### 修改样式
 样式使用 Tailwind CSS，参考 [官方文档](https://tailwindcss.com/docs)。
@@ -289,5 +393,5 @@ MIT License - 欢迎使用！
 ---
 
 <p align="center">
-  <sub>Built with ❤️ by Vue 3 + Laf + 腾讯云</sub>
+  <sub>Built with ❤️ by Vue 3 + Express + MySQL</sub>
 </p>

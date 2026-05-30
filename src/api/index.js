@@ -12,7 +12,9 @@ import { getData, saveData, generateId } from './mockData'
 
 // ============ API 配置 ============
 // 直接连接 Express 后端
-const API_BASE = 'http://localhost:5000'
+// 开发环境: http://localhost:5000 (对应 .env.development)
+// 生产环境: https://api.example.com (对应 .env.production)
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
 const CACHE_KEY = 'portfolio_api_cache'
 let useMock = false // 默认尝试使用后端
@@ -236,15 +238,14 @@ export async function deleteProject(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/project`, {
+    const res = await fetch(`${API_BASE}/api/project/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ id: id })
+      headers: { ...getAuthHeaders() }
     })
     const result = await res.json()
     // 更新缓存
     const cached = getFromCache('projects') || []
-    setCache('projects', cached.filter(p => p._id !== id))
+    setCache('projects', cached.filter(p => p.id !== id))
     return result
   } catch (error) {
     console.error('删除项目失败:', error)
@@ -343,15 +344,14 @@ export async function deleteAward(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/awards`, {
+    const res = await fetch(`${API_BASE}/api/awards/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ id: id })
+      headers: { ...getAuthHeaders() }
     })
     const result = await res.json()
     // 更新缓存
     const cached = getFromCache('awards') || []
-    setCache('awards', cached.filter(a => a._id !== id))
+    setCache('awards', cached.filter(a => a.id !== id))
     return result
   } catch (error) {
     console.error('删除奖项失败:', error)
@@ -450,15 +450,14 @@ export async function deleteExperience(id) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/experiences`, {
+    const res = await fetch(`${API_BASE}/api/experiences/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ id: id })
+      headers: { ...getAuthHeaders() }
     })
     const result = await res.json()
     // 更新缓存
     const cached = getFromCache('experience') || []
-    setCache('experience', cached.filter(e => e._id !== id))
+    setCache('experience', cached.filter(e => e.id !== id))
     return result
   } catch (error) {
     console.error('删除经历失败:', error)
