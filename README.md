@@ -87,9 +87,9 @@ lan-resume/
 └── my-portfolio-backend/     # 后端项目 (Express + Prisma)
     ├── src/
     │   ├── controllers/      # 业务控制器
-    │   ├── routes/           # 路由定义
-    │   ├── middleware/       # 中间件
-    │   └── prisma/           # 数据库客户端
+    │   ├── routes/          # 路由定义
+    │   ├── middleware/      # 中间件
+    │   └── prisma/         # 数据库客户端
     └── ...
 ```
 
@@ -110,7 +110,7 @@ my-portfolio-local/
 │   ├── components/            # 公共组件
 │   ├── composables/           # 组合式函数
 │   │   └── useScrollAnimation.js  # 滚动动画
-│   ├── i18n/                  # 国际化配置
+│   ├── i18n/                 # 国际化配置
 │   │   ├── zh.js            # 中文
 │   │   └── en.js            # 英文
 │   ├── router/               # 路由配置（含守卫）
@@ -290,6 +290,312 @@ pnpm preview
    - Output Directory: `dist`
 4. 部署完成
 
+## 🐛 调试与问题解决
+
+本章节详细记录了项目开发过程中遇到的问题、排查思路和解决方案，供后续开发者参考。
+
+---
+
+### 问题一：登录无响应 🚨
+
+**现象描述**
+- 点击登录按钮后页面无反应
+- 控制台无错误信息
+- 登录成功后页面不跳转
+
+**排查过程**
+
+1. **检查网络请求**
+   - 打开浏览器开发者工具 → Network（网络）标签
+   - 点击登录按钮，观察是否有请求发出
+   - 结果：请求已发送到 `http://localhost:5000/api/auth/login`
+
+2. **检查后端日志**
+   - 查看后端服务终端日志
+   - 发现后端已收到请求，但无响应返回
+
+3. **检查路由守卫**
+   ```javascript
+   // src/router/index.js
+   // 发现问题：路由守卫检查的是 admin_token，但登录存储的是 token
+   const isAuthenticated = localStorage.getItem('admin_token') === 'authenticated'
+   // 修复后：
+   const isAuthenticated = !!localStorage.getItem('token')
+   ```
+
+4. **检查数据库密码**
+   - 登录页面使用的密码是 `Fernoa@2024`
+   - 数据库中存储的密码哈希与该密码不匹配
+   - 更新数据库中的密码哈希值
+
+**根本原因**
+1. 路由守卫使用 `admin_token` 作为认证 key，但登录成功后存储的是 `token`
+2. 数据库中 admin 用户的密码哈希与前端期望密码不匹配
+
+**解决方案**
+```javascript
+// src/router/index.js - 修复路由守卫
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token')  // 使用正确的 key
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login')
+  } else if (to.path === '/login' && isAuthenticated) {
+    next('/admin')
+  } else {
+    next()
+  }
+})
+```
+
+**涉及文件**
+- `src/router/index.js` - 第 57 行
+- 数据库 `User` 表 - admin 用户密码
+
+---
+
+### 问题二：奖项/经历列表获取失败 🚨
+
+**现象描述**
+```
+[error] 获取奖项列表失败，尝试缓存: Error: API error
+[error] 获取经历列表失败，尝试缓存: Error: API error
+```
+
+**排查过程**
+
+1. **检查后端路由配置**
+   ```javascript
+   // backend/src/index.js
+   app.use('/api/awards', awardRouter);   // 复数形式
+   app.use('/api/award', awardRouter);    // 单数形式
+   app.use('/api/experiences', experienceRouter);  // 复数形式
+   app.use('/api/experience', experienceRouter);   // 单数形式
+   ```
+
+2. **检查前端 API 调用**
+   ```javascript
+   // src/api/index.js
+   // 发现问题：前端使用单数形式
+   const res = await fetch(`${API_BASE}/api/award`)
+   const res = await fetch(`${API_BASE}/api/experience`)
+   ```
+
+3. **对比前后端路径**
+   | 模块 | 前端调用 | 后端路由 |
+   |------|---------|---------|
+   | 奖项 | `/api/award` | `/api/awards` ❌ 不匹配 |
+   | 经历 | `/api/experience` | `/api/experiences` ❌ 不匹配 |
+
+**根本原因**
+前后端 API 路径命名不一致：前端使用单数，后端使用复数形式。当请求 `/api/award` 时，后端没有对应路由，返回 404 HTML 页面而非 JSON。
+
+**解决方案**
+修改前端 `src/api/index.js` 中所有奖项和经历的 API 路径（共 8 处）：
+```javascript
+// 修改前
+const res = await fetch(`${API_BASE}/api/award`)
+const res = await fetch(`${API_BASE}/api/experience`)
+
+// 修改后
+const res = await fetch(`${API_BASE}/api/awards`)
+const res = await fetch(`${API_BASE}/api/experiences`)
+```
+
+**涉及文件**
+- `src/api/index.js` - 所有奖项和经历相关 API
+
+---
+
+### 问题三：奖项修改功能无法保存 🚨
+
+**现象描述**
+```
+[error] 更新奖项失败: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[error] 保存失败: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+```
+
+**排查过程**
+
+1. **分析错误信息**
+   - `Unexpected token '<'` 表示后端返回的是 HTML 而非 JSON
+   - `<!DOCTYPE` 是 HTML 页面的开头
+
+2. **检查后端返回**
+   - 访问 `PUT /api/awards` 时返回 404 HTML 页面
+   - 说明请求路径不正确
+
+3. **检查前端调用代码**
+   ```javascript
+   // AdminAwards.vue 第 142 行
+   await updateAward(editingId.value, formData.value)  // ❌ 两个参数
+   ```
+
+4. **对比 updateAward 函数签名**
+   ```javascript
+   // src/api/index.js
+   export async function updateAward(awardData) {  // 只接受一个参数
+     const res = await fetch(`${API_BASE}/api/awards`, {
+       method: 'PUT',
+       body: JSON.stringify(awardData)  // awardData 应该包含 id
+     })
+   }
+   ```
+
+**根本原因**
+`AdminAwards.vue` 调用 `updateAward` 时传递了两个参数 `(editingId.value, formData.value)`，但函数只接受一个参数 `awardData`。由于 `formData.value` 已经包含了 `id`，所以只需要传递一个参数。
+
+**解决方案**
+```javascript
+// AdminAwards.vue - saveAward 函数
+const saveAward = async () => {
+  try {
+    if (isEditing.value) {
+      // 修改前：await updateAward(editingId.value, formData.value)
+      // 修改后：
+      await updateAward(formData.value)
+    } else {
+      await addAward(formData.value)
+    }
+    // ...
+  }
+}
+```
+
+**涉及文件**
+- `src/views/admin/AdminAwards.vue` - 第 142 行
+
+---
+
+### 问题四：后端返回 HTML 而非 JSON
+
+**现象描述**
+所有修改类操作（PUT/DELETE）都返回 HTML 页面而非 JSON
+
+**排查过程**
+
+1. **检查后端路由挂载**
+   ```javascript
+   // backend/src/index.js
+   app.use('/api/awards', awardRouter);  // 复数路由
+   app.use('/api/award', awardRouter);   // 单数路由
+   ```
+
+2. **检查控制器中的 ID 获取**
+   ```javascript
+   // backend/src/controllers/awardController.js
+   const updateAward = async (req, res) => {
+     const id = req.params.id || req.body.id || req.body._id;
+     // 问题：req.params.id 可能是 undefined
+   }
+   ```
+
+3. **检查前端请求体**
+   ```javascript
+   // 前端 PUT 请求
+   body: JSON.stringify(awardData)  // awardData 包含 id
+   ```
+
+**根本原因**
+后端同时挂载了单数和复数路由：
+- `PUT /api/awards/:id` → 正确匹配
+- `PUT /api/award` → 不带路径参数，id 从 body 获取
+
+但前端请求 `/api/awards`（复数），而后端某些情况下返回 404。
+
+**解决方案**
+统一前后端路径使用复数形式：
+```javascript
+// 前端统一使用复数
+/api/awards
+/api/experiences
+```
+
+**涉及文件**
+- `src/api/index.js`
+
+---
+
+### 问题五：中文乱码
+
+**现象描述**
+- 数据库存储的中文显示为乱码
+- 特殊字符（如 emoji）无法保存
+
+**排查过程**
+
+1. **检查数据库连接**
+   ```javascript
+   // prisma/client.js
+   DATABASE_URL="mysql://user:pass@localhost:3306/db?charset=utf8"
+   // 问题：缺少 charset=utf8mb4
+   ```
+
+2. **检查字段类型**
+   ```prisma
+   // schema.prisma
+   model Award {
+     title String @db.Text  // Text 类型支持中文
+   }
+   ```
+
+**根本原因**
+1. MySQL 连接字符串缺少 `charset=utf8mb4`
+2. 需要支持 emoji 和特殊字符
+
+**解决方案**
+```env
+# .env
+DATABASE_URL="mysql://user:pass@localhost:3306/db?charset=utf8mb4"
+```
+
+```prisma
+# schema.prisma
+model Award {
+  title String @db.Text  // 使用 TEXT 类型而非 VARCHAR
+}
+```
+
+---
+
+### 问题六：图片上传失败
+
+**现象描述**
+- 上传图片时报错
+- Base64 编码的图片数据无法存储
+
+**排查过程**
+
+1. **检查数据库字段类型**
+   ```prisma
+   model Project {
+     cover String?  // 默认 VARCHAR(191) 长度不足
+   }
+   ```
+
+2. **检查 Express 配置**
+   ```javascript
+   app.use(express.json({ limit: '10mb' }));  // 已设置
+   ```
+
+**根本原因**
+1. `cover` 字段默认映射到 `VARCHAR(191)`，无法存储长 base64 字符串
+2. Base64 编码后图片数据约为原图的 133%
+
+**解决方案**
+```prisma
+model Project {
+  cover String? @db.LongText  // 使用 LongText 类型
+}
+```
+
+```javascript
+// backend/src/index.js
+app.use(express.json({ limit: '10mb' }));  // 确保足够大
+```
+
+---
+
 ## 📊 更新日志
 
 ### v2.1.0 (2026.05) - 后端重构与 Bug 修复
@@ -391,6 +697,27 @@ pnpm preview
 样式使用 Tailwind CSS，参考 [官方文档](https://tailwindcss.com/docs)。
 
 自定义样式在 `src/style.css` 中，包含动画定义。
+
+### 调试技巧
+
+1. **查看网络请求**
+   - 打开浏览器开发者工具（F12）
+   - 切换到 Network（网络）标签
+   - 筛选 XHR 或 Fetch 类型请求
+
+2. **检查后端日志**
+   - 后端服务终端会显示所有请求日志
+   - 格式：`📩 METHOD /path`
+
+3. **清除缓存**
+   - 前后端都可能缓存数据
+   - 清除浏览器缓存或 localStorage
+
+4. **数据库检查**
+   ```bash
+   # 进入 Prisma Studio 查看数据
+   npx prisma studio
+   ```
 
 ## 📂 目录说明
 
