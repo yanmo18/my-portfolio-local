@@ -1,4 +1,6 @@
+// vue框架-Vue启动程序，导入Vue应用，相当于租店面
 import { createApp } from 'vue'
+
 import './style.css'
 import App from './App.vue'
 import router from './router'
