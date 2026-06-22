@@ -1,3 +1,4 @@
+// 施工图纸（怎么构建，路径别名，环境变量）
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
