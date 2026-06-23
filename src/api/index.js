@@ -1,5 +1,6 @@
 /**
  * API 适配层
+ * 三层降级策略
  * 优先使用后端 API，后端不可用时：
  *   1. 优先读取 localStorage 缓存（用户之前添加的数据）
  *   2. 没有缓存则使用默认 Mock 数据
@@ -15,9 +16,9 @@ import { getData, saveData, generateId } from './mockData'
 // 开发环境: http://localhost:5000 (对应 .env.development)
 // 生产环境: https://api.example.com (对应 .env.production)
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
-
-const CACHE_KEY = 'portfolio_api_cache'
-let useMock = false // 默认尝试使用后端
+//api 基础路径,设置后端api基础地址，import.meta.env.VITE_API_BASE 从环境变量中获取api基础地址，默认值为http://localhost:5000
+const CACHE_KEY = 'portfolio_api_cache'//给localStorage设置一个key，取一个名字给缓存数据，用于缓存api数据
+let useMock = false // 默认尝试使用后端，mock数据模式，false,正常模式，请求后端，cache缓存模式，true，mock模式
 
 // localStorage 缓存操作
 function getCache() {
