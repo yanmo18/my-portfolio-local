@@ -156,42 +156,61 @@ const handleMouseMove = (e) => {
   }
 }
 
+// 登录处理函数,async异步函数+try catch处理异常+await等待登录响应返回
 const handleLogin = async () => {
+  // 登录处理函数
+  // 发送登录请求到后端，处理登录响应，设置token，跳转到admin路由
+  // 登录失败时，显示错误提示
+  // 登录成功时，跳转到admin路由
+  // 登录失败时，显示错误提示
   error.value = ''
   
   if (!form.username || !form.password) {
     error.value = '请输入用户名和密码'
     return
   }
-
+// 登录中，显示loading状态
   loading.value = true
 
   try {
     const res = await fetch('http://localhost:5000/api/auth/login', {
+      // fetch()被调用
+      // 返回一个Promise对象，等待登录响应返回
+      // await让函数暂停，等待登录响应返回后继续执行
+      // 同时，将登录请求体转换为json格式，浏览器将请求发送到后端
+      // 后端收到请求后，会验证用户名和密码是否正确
+      // 如果正确，会返回token，填充到promise中，浏览器将token存储在localStorage中
+      // await将登录响应解析为json格式，赋值给result
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        // 转化数据为json格式
         username: form.username,
         password: form.password
       })
     })
-    
+    // 解析登录响应为json格式，res.json()返回一个Promise对象，等待登录响应解析为json格式后继续执行，res就是返回的json数据
     const result = await res.json()
-    
+    // 判断登录响应是否成功，是否有token
     if (res.ok && result.data?.token) {
+      // 登录成功，将token存储在localStorage中
       localStorage.setItem('token', result.data.token)
+      // 登录成功，跳转到admin路由
       router.push('/admin')
     } else {
+      // 显示登录提示信息，密码或者用户名错误
       error.value = result.error || result.message || '用户名或密码错误'
     }
+
   } catch (err) {
     error.value = '登录失败，请检查后端服务'
     console.error('Login error:', err)
   }
-
+// 关闭loading状态
   loading.value = false
 }
-
+// 清理动画帧，防止内存泄漏
+// 组件卸载时，取消动画帧
 onUnmounted(() => {
   if (animationFrame) cancelAnimationFrame(animationFrame)
 })
