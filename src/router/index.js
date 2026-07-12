@@ -58,13 +58,14 @@ const router = createRouter({
   routes
 })
 // router是一个路由实例，用于管理路由配置和导航,启用history模式，不显示#号
-// 路由守卫，用于在路由切换前进行权限校验
+// 路由守卫
+// 用于在路由切换前进行权限校验
 router.beforeEach((to, from, next) => {
   // to,目标路由对象
   // from,当前路由对象
   // next,路由切换函数，next()放行，next('/login')跳转到登录页，使用redirect重定向到其他路由。next(admin)跳转到admin路由 
   const isAuthenticated = !!localStorage.getItem('token')
-  // 检查用户是否已登录
+  // 这里是判断用户是否已登录，如果有token，说明用户已登录，否则说明用户未登录，
   // 如果用户未登录，且目标路由需要登录权限，跳转到登录页
   // 如果用户已登录，且目标路由不需要登录权限，继续访问目标路由
   // 如果用户未登录，且目标路由不需要登录权限，继续访问目标路由

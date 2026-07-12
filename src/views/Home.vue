@@ -703,7 +703,8 @@ const setupAnimations = () => {
   observeSection(experienceRef.value, experienceVisible)
   observeSection(contactRef.value, contactVisible)
 }
-
+// 这里是回调函数，用于在组件挂载完成后执行，页面滚动时会触发handleScroll函数
+// async 确保在数据加载完成后执行动画，配合await使用
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   

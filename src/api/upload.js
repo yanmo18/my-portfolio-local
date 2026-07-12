@@ -40,7 +40,10 @@ export async function getResume() {
  * @returns {Promise<string>} 简历 URL
  */
 export async function uploadResume(file) {
+  // async会返回一个Promise实例，等待await，Promise实例执行完成，返回base64编码的字符串
   const base64 = await fileToBase64(file)
+  // 等待await，Promise实例执行完成，返回base64编码的字符串
+  // 然后将base64编码的字符串转换为data URL格式
   const resumeUrl = `data:${file.type};base64,${base64}`
 
   try {
@@ -68,8 +71,12 @@ export async function uploadResume(file) {
     return { url: resumeUrl }
   }
 }
-
+// 创建一个函数，将文件转换为 base64 编码的字符串
+// 创建自定义 Promise 函数，用于处理异步操作
 function fileToBase64(file) {
+  // new 一个 Promise 实例
+  // 当文件读取完成时，调用 resolve 函数，将 base64 编码的字符串作为参数传递
+  // 当文件读取失败时，调用 reject 函数，将错误信息作为参数传递
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {

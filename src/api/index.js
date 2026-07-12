@@ -72,6 +72,10 @@ function getAuthHeaders() {
 }
 
 // 初始化 API：尝试连接后端，如果失败则降级使用缓存或 Mock 数据
+//这里集中实现了API的初始化逻辑，包括连接后端、使用缓存或Mock数据的判断，三层降级策略
+// 优先使用后端 API，后端不可用时：
+//   1. 优先读取 localStorage 缓存（用户之前添加的数据）
+//   2. 没有缓存则使用默认 Mock 数据
 export async function initAPI() {
   try {
     // 尝试发送请求到后端 /api/profile 接口，验证后端是否可用
